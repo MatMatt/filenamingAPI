@@ -316,6 +316,7 @@ run `parseo parse <filename>` and `parseo assemble --schema <schema_path>` to co
 ### Run unit tests
 
 Install the pytest python package.
+
 from the top-level directory, run `pytest` to launch all tests, or e.g `pytest tests/test_schema_examples_round_trip.py`
 
 ### Run as API
