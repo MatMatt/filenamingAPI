@@ -328,7 +328,7 @@ app = FastAPI()
 @app.get("/parse")
 def parse_endpoint(name: str):
     res = parse_auto(name)
-    return res.model_dump()
+    return res
 
 @app.post("/assemble")
 def assemble_endpoint(schema: str, fields: dict):
