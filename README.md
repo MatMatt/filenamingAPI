@@ -33,7 +33,7 @@ pip install parseo
 For development installs:
 
 ``` bash
-git clone https://github.com/MatMatt/parsEO.git
+git clone https://github.com/copernicus-land/parsEO.git
 cd parsEO
 pip install -e .
 ```
@@ -312,6 +312,58 @@ Populate `"examples"` with valid filenames covering typical combinations of opti
 ### Test round-trips
 
 run `parseo parse <filename>` and `parseo assemble --schema <schema_path>` to confirm the schema behaves as expected.
+
+### Run unit tests
+
+Install the pytest python package.
+
+from the top-level directory, run `pytest` to launch all tests, or e.g `pytest tests/test_schema_examples_round_trip.py`
+
+### Run as API
+
+parsEO functions can be exposed through a web service. The example below uses [FastAPI](https://fastapi.tiangolo.com), which provides an automatic Swagger UI for trying out the endpoints.
+
+``` python
+# Safe to file: main.py
+from fastapi import FastAPI
+from parseo import assemble, parse_auto
+
+app = FastAPI()
+
+@app.get("/parse")
+def parse_endpoint(name: str):
+    res = parse_auto(name)
+    return res
+
+@app.post("/assemble")
+def assemble_endpoint(schema: str, fields: dict):
+    filename = assemble(schema, fields)
+    return {"filename": filename}
+```
+
+Install fastapi and uvicorn (in a python virtual environment):
+
+``` bash
+python3 -m venv .venv
+source .venv/bin/activate
+```
+
+Install the required dependencies (fastapi and uvicorn):
+
+``` bash
+(.venv) pip install fastapi uvicorn[standard]
+```
+
+from the console inside the same directory start the app:
+
+``` bash
+(.venv) python -m uvicorn main:app --reload
+```
+
+Open <http://127.0.0.1:8000/docs> to access Swagger UI:
+
+The interactive page lets you call `/parse` and `/assemble` directly from the browser to verify the API.
+
 
 ## Contributing
 
