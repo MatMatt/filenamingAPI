@@ -313,6 +313,52 @@ Populate `"examples"` with valid filenames covering typical combinations of opti
 
 run `parseo parse <filename>` and `parseo assemble --schema <schema_path>` to confirm the schema behaves as expected.
 
+
+### Run as API
+
+parsEO functions can be exposed through a web service. The example below uses [FastAPI](https://fastapi.tiangolo.com), which provides an automatic Swagger UI for trying out the endpoints.
+
+``` python
+# Safe to file: main.py
+from fastapi import FastAPI
+from parseo import assemble, parse_auto
+
+app = FastAPI()
+
+@app.get("/parse")
+def parse_endpoint(name: str):
+    res = parse_auto(name)
+    return res.model_dump()
+
+@app.post("/assemble")
+def assemble_endpoint(schema: str, fields: dict):
+    filename = assemble(schema, fields)
+    return {"filename": filename}
+```
+
+Install fastapi and uvicorn (in a python virtual environment):
+
+``` bash
+python3 -m venv .venv
+source .venv/bin/activate
+```
+
+Install the required dependencies (fastapi and uvicorn):
+
+``` bash
+(.venv) pip install fastapi uvicorn[standard]
+```
+
+from the console inside the same directory start the app:
+
+``` bash
+(.venv) python -m uvicorn main:app --reload
+```
+
+Open <http://127.0.0.1:8000/docs> to access Swagger UI:
+
+The interactive page lets you call `/parse` and `/assemble` directly from the browser to verify the API.
+
 ## Contributing
 
 -   Place new schemas under `src/parseo/schemas/<product_family>/`.
