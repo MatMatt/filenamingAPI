@@ -313,6 +313,10 @@ Populate `"examples"` with valid filenames covering typical combinations of opti
 
 run `parseo parse <filename>` and `parseo assemble --schema <schema_path>` to confirm the schema behaves as expected.
 
+### Run unit tests
+
+Install the pytest python package.
+from the top-level directory, run `pytest` to launch all tests, or e.g `pytest tests/test_schema_examples_round_trip.py`
 
 ### Run as API
 
@@ -358,6 +362,7 @@ from the console inside the same directory start the app:
 Open <http://127.0.0.1:8000/docs> to access Swagger UI:
 
 The interactive page lets you call `/parse` and `/assemble` directly from the browser to verify the API.
+
 
 ## Contributing
 
