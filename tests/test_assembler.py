@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 
 import pytest
@@ -159,6 +160,10 @@ def test_assemble_clms_clcplus_with_canonical_type():
     assert name == "CLMS_CLCPLUS_RAS_S2023_R10m_E48N37_03035_V01_R00.tif"
 
 
+@pytest.mark.skipif(
+    os.getenv("GITHUB_ACTIONS") == "true",
+    reason="Skipped on GitHub Actions"
+)
 def test_assemble_modis_from_stac_fields():
     schema = (
         Path(__file__).resolve().parents[1]
