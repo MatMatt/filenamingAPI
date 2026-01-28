@@ -33,7 +33,7 @@ pip install parseo
 For development installs:
 
 ``` bash
-git clone https://github.com/MatMatt/parsEO.git
+git clone https://github.com/copernicus-land/parsEO.git
 cd parsEO
 pip install -e .
 ```
