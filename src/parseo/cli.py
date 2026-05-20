@@ -44,6 +44,10 @@ def _build_arg_parser() -> argparse.ArgumentParser:
         "--schema",
         help="Path to a schema JSON file to parse with instead of auto-detection.",
     )
+    p_parse.add_argument(
+        "--family",
+        help="Schema family to use for parsing (e.g. 'S2', 'LANDSAT'). When omitted, auto-detection is used.",
+    )
 
     # list-schemas
     p_list = sp.add_parser("list-schemas", help="List available schema families")
@@ -221,6 +225,8 @@ def main(argv: Union[List[str], None] = None) -> int:
         try:
             if args.schema:
                 res = parse(args.filename, schema_path=args.schema)
+            elif args.family:
+                res = parse(args.filename, family=args.family)
             else:
                 res = parse_auto(args.filename)
         except ParseError as exc:
