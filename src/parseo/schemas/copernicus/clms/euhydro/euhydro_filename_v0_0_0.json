@@ -1,14 +1,14 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "schema_id": "copernicus:clms:pa",
-  "schema_version": "1.0.0",
+  "schema_id": "copernicus:clms:euhydro",
+  "schema_version": "0.0.0",
   "status": "current",
   "stac_version": "1.1.0",
   "stac_extensions": [
     "https://stac-extensions.github.io/vector/v1.0.0/schema.json",
     "https://stac-extensions.github.io/raster/v1.0.0/schema.json"
   ],
-  "description": "Copernicus Protected areas filename schema covering status layer (extension optional).",
+  "description": "Copernicus EU Hydro filename schema covering status layer (extension optional).",
   "fields": {
     "programme": {
       "type": "string",
@@ -20,16 +20,18 @@
     "product": {
       "type": "string",
       "enum": [
-        "PA"
+        "EUHYDRO"
       ],
-      "description": "Product code (Protected Areas)"
+      "description": "Product code (EU Hydro)"
     },
-    "variable": {
+    "subtheme": {
       "type": "string",
       "enum": [
-        "LCUC"
+        "SUB",
+        "NET",
+        "DIR"
       ],
-      "description": "Protected Areas sub-theme identifier"
+      "description": "EU Hydro sub-theme identifier"
     },
     "survey": {
       "type": "string",
@@ -39,9 +41,9 @@
     "type": {
       "type": "string",
       "enum": [
-        "V"
+        "R","V"
       ],
-      "description": "Data type:vector",
+      "description": "Data type:vector or raster",
       "stac_map": {
         "values": {
           "V": {
@@ -52,13 +54,25 @@
     },
     "resolution": {
       "type": "string",
-      "pattern": "^(\\d{2}HA)$",
-      "description": "Minimum mapping unit"
+      "pattern": "^(?:\\d{2,3}m|\\d{2}HA)$",
+      "description": "Spatial resolution or minimum mapping unit"
     },
-    "area_code": {
-      "type": "string",
-      "pattern": "^DU\\d{4}$",
-      "description": "Delivery unit (bioregion) code"
+    "tile_id": {
+      "description": "Tile identifier in the EEA 10m grid (easting/northing) or two-letter geographic code",
+      "oneOf": [
+        {
+          "title": "INSPIRE ETRS89-LAEA Grid",
+          "type": "string",
+          "pattern": "^[EW]\\d{2,3}[NS]\\d{2,3}$",
+          "description": "Regional LAEA grid tile identifier (2- or 3-digit coordinates)"
+        },
+        {
+          "title": "Geographic code",
+          "type": "string",
+          "pattern": "^[A-Z]{2}$",
+          "description": "Two-letter geographic code used by VLCC vector products"
+        }
+      ]
     },
     "area_name": {
       "type": "string",
@@ -68,7 +82,7 @@
     "spatial_coverage": {
       "type": "string",
       "pattern": "^(EU27)$",
-      "description": "Spatial coverage identifier of the full dataset (e.g, EU27)"
+      "description": "Optional spatial coverage identifier of the full dataset (e.g, EU27)"
     },
     "epsg_code": {
       "type": "string",
@@ -92,12 +106,14 @@
     },
     "extension": {
       "type": "string",
-      "pattern": "^(gpkg|gdb|fgb|parquet)$",
-      "description": "Optional file extension without leading dot (allows compound extensions such as gpkg)"
+      "pattern": "^(gpkg|gdb|fgb|parquet|tif)$",
+      "description": "Optional file extension without leading dot"
     }
   },
-  "template": "{programme}_{product}_{variable}_{survey}_{area_code}_{area_name}_{type}{resolution}_{spatial_coverage}_{epsg_code}_{version}_{revision}_{production_date}[.{extension}]",
+  "template": "{programme}_{product}_{subtheme}_{survey}_{type}{resolution}_{tile_id}_[{spatial_coverage}_]{epsg_code}_{version}_{revision}_{production_date}[.{extension}]",
   "examples": [
-    "CLMS_PA_LCUC_S2021_DU0014_BLACKSEA_V05HA_EU27_03035_V01_R01_20260211"
+    "CLMS_EUHYDRO_NET_S2026_V10m_EU_03035_V02_R00_20261015.gpkg",
+    "CLMS_EUHYDRO_DIR_S2026_V10m_EU_03035_V02_R00_20261015.tif",
+    "CLMS_EUHYDRO_SUB_E35N49_S2021_V05HA_EU27_03035_V01_R01_20260211"
   ]
 }

@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schema_id": "copernicus:clms:hrl:swf",
+  "schema_version": "0.0.2",
+  "status": "current",
+  "stac_version": "1.1.0",
+  "stac_extensions": [
+    "https://stac-extensions.github.io/raster/v1.0.0/schema.json",
+    "https://stac-extensions.github.io/eo/v1.0.0/schema.json"
+  ],
+  "description": "CLMS High Resolution Layer Small Landscape Features product filename (extension optional).",
+  "fields": {
+    "variable": {
+      "type": "string",
+      "enum": [
+        "SLF"
+      ],
+      "description": "Product code"
+    },
+    "reference_year": {
+      "type": "string",
+      "pattern": "^\\d{4}$",
+      "description": "Reference year"
+    },
+    "resolution": {
+      "type": "string",
+      "pattern": "^(?:005m|010m|020m|100m|vec)$",
+      "description": "Spatial resolution"
+    },
+    "tile_id": {
+      "title": "INSPIRE ETRS89-LAEA Grid",
+      "type": "string",
+      "pattern": "^[EW]\\d{2,3}[NS]\\d{2,3}$",
+      "description": "Regional LAEA grid tile identifier (2- or 3-digit coordinates)"
+    },
+    "epsg_code": {
+      "type": "string",
+      "pattern": "^\\d{5}$",
+      "description": "EPSG code of the product grid"
+    },
+    "extension": {
+      "type": "string",
+      "enum": [
+        "tif"
+      ],
+      "description": "File extension without leading dot"
+    }
+  },
+  "template": "{prefix}_{theme}_{variable}_{reference_year}_{resolution}_{tile_id}_{epsg_code}[.{extension}]",
+  "examples": [
+    "CLMS_HRLSLF_SFW_S2021_R5m_E34N27_03035_v01_r01_20260521.tif",
+    "CLMS_HRLSLF_SFW_S2021_R100m_E36N31_03035_v01_r01_20260521.tif",
+    "CLMS_HRLSLF_CM_S2021_R5m_E36N31_03035_v01_r01_20260521.tif",
+    "CLMS_HRLSLF_FM_S2021_R5m_E36N31_03035_v01_r01_20260521.tif",
+    "CLMS_HRLSLF_WVL_S2018_R5m_E26N17_03035_V01_R02_20260407.tif",
+    "CLMS_HRLSLF_SWF_S2021_VEC_E26N17_03035_V01_R02_20260407.gpkg"
+  ]
+}

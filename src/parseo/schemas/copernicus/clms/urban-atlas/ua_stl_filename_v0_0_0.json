@@ -1,14 +1,14 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "schema_id": "copernicus:clms:pa",
-  "schema_version": "1.0.0",
+  "schema_id": "copernicus:clms:ua-stl",
+  "schema_version": "0.0.0",
   "status": "current",
   "stac_version": "1.1.0",
   "stac_extensions": [
     "https://stac-extensions.github.io/vector/v1.0.0/schema.json",
     "https://stac-extensions.github.io/raster/v1.0.0/schema.json"
   ],
-  "description": "Copernicus Protected areas filename schema covering status layer (extension optional).",
+  "description": "Copernicus Urban Atlas filename schema covering the street tree layer (extension optional).",
   "fields": {
     "programme": {
       "type": "string",
@@ -20,28 +20,28 @@
     "product": {
       "type": "string",
       "enum": [
-        "PA"
+        "UA"
       ],
-      "description": "Product code (Protected Areas)"
+      "description": "Product code (Urban Atlas)"
     },
     "variable": {
       "type": "string",
       "enum": [
-        "LCUC"
+        "STL"
       ],
-      "description": "Protected Areas sub-theme identifier"
+      "description": "Urban Atlas sub-theme identifier"
     },
     "survey": {
       "type": "string",
-      "pattern": "^(?:S\\d{4})$",
-      "description": "Temporal coverage token (e.g., S2021)"
+      "pattern": "^(?:S\\d{4}|C\\d{4}-\\d{4})$",
+      "description": "Temporal coverage token (e.g., S2021 or C2018-2021)"
     },
     "type": {
       "type": "string",
       "enum": [
-        "V"
+        "VEC"
       ],
-      "description": "Data type:vector",
+      "description": "Data type vector",
       "stac_map": {
         "values": {
           "V": {
@@ -50,25 +50,15 @@
         }
       }
     },
-    "resolution": {
-      "type": "string",
-      "pattern": "^(\\d{2}HA)$",
-      "description": "Minimum mapping unit"
-    },
     "area_code": {
       "type": "string",
-      "pattern": "^DU\\d{4}$",
-      "description": "Delivery unit (bioregion) code"
+      "pattern": "^[A-Z]{2}\\d{3}L[A-Za-z0-9]$",
+      "description": "Functional urban area (FUA) code"
     },
-    "area_name": {
+    "city": {
       "type": "string",
-      "pattern": "^[A-Z]+$",
-      "description": "Area name identifier (letters)"
-    },
-    "spatial_coverage": {
-      "type": "string",
-      "pattern": "^(EU27)$",
-      "description": "Spatial coverage identifier of the full dataset (e.g, EU27)"
+      "pattern": "^[\\w-]+$",
+      "description": "City or metropolitan area identifier (letters, digits and hyphen)"
     },
     "epsg_code": {
       "type": "string",
@@ -92,12 +82,12 @@
     },
     "extension": {
       "type": "string",
-      "pattern": "^(gpkg|gdb|fgb|parquet)$",
-      "description": "Optional file extension without leading dot (allows compound extensions such as gpkg)"
+      "pattern": "^[A-Za-z0-9]+(?:\\.[A-Za-z0-9]+)?$",
+      "description": "Optional file extension without leading dot (allows compound extensions such as gpkg.zip)"
     }
   },
-  "template": "{programme}_{product}_{variable}_{survey}_{area_code}_{area_name}_{type}{resolution}_{spatial_coverage}_{epsg_code}_{version}_{revision}_{production_date}[.{extension}]",
+  "template": "{programme}_{product}_{variable}_{survey}_{type}_{area_code}_{city}_{epsg_code}_{version}_{revision}_{production_date}[.{extension}]",
   "examples": [
-    "CLMS_PA_LCUC_S2021_DU0014_BLACKSEA_V05HA_EU27_03035_V01_R01_20260211"
+    "CLMS_UA_STL_S2021_VEC_AT001L3_WIEN_03035_V01_R01_20251030.gpkg"
   ]
 }
