@@ -48,6 +48,11 @@ def _build_arg_parser() -> argparse.ArgumentParser:
         "--family",
         help="Schema family to use for parsing (e.g. 'S2', 'LANDSAT'). When omitted, auto-detection is used.",
     )
+    p_parse.add_argument(
+        "--ignore-case",
+        action="store_true",
+        help="Perform case-insensitive matching (default is case-sensitive).",
+    )
 
     # list-schemas
     p_list = sp.add_parser("list-schemas", help="List available schema families")
@@ -224,11 +229,11 @@ def main(argv: Union[List[str], None] = None) -> int:
     if args.cmd == "parse":
         try:
             if args.schema:
-                res = parse(args.filename, schema_path=args.schema)
+                res = parse(args.filename, schema_path=args.schema, ignore_case=args.ignore_case)
             elif args.family:
-                res = parse(args.filename, family=args.family)
+                res = parse(args.filename, family=args.family, ignore_case=args.ignore_case)
             else:
-                res = parse_auto(args.filename)
+                res = parse_auto(args.filename, ignore_case=args.ignore_case)
         except ParseError as exc:
             hint = ""
             family = getattr(exc, "match_family", None)

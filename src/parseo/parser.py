@@ -68,8 +68,9 @@ class ParseError(Exception):
 
 
 @lru_cache(maxsize=512)
-def _compile_pattern(pattern: str) -> re.Pattern:
-    return re.compile(pattern)
+def _compile_pattern(pattern: str, ignore_case: bool = False) -> re.Pattern:
+    flags = re.IGNORECASE if ignore_case else 0
+    return re.compile(pattern, flags)
 
 
 def _pattern_from_schema(schema: Dict) -> Optional[str]:
@@ -95,11 +96,11 @@ def _pattern_from_schema(schema: Dict) -> Optional[str]:
     return None
 
 
-def _match_filename(name: str, schema: Dict) -> Optional[re.Match]:
+def _match_filename(name: str, schema: Dict, ignore_case: bool = False) -> Optional[re.Match]:
     patt = _pattern_from_schema(schema)
     if not isinstance(patt, str) or not patt:
         return None
-    rx = _compile_pattern(patt)
+    rx = _compile_pattern(patt, ignore_case=ignore_case)
     return rx.match(name)
 
 
@@ -146,12 +147,12 @@ def _normalize_epsg_fields(fields: Dict[str, Any]) -> Dict[str, Any]:
     return normalized
 
 
-def _extract_fields(name: str, schema: Dict) -> Dict[str, str]:
+def _extract_fields(name: str, schema: Dict, ignore_case: bool = False) -> Dict[str, str]:
     """
     Extract named groups as fields from 'name' using the schema's regex.
     If the regex doesn't match, return an empty dict.
     """
-    m = _match_filename(name, schema)
+    m = _match_filename(name, schema, ignore_case=ignore_case)
     if not m:
         return {}
     extracted = m.groupdict()
@@ -159,8 +160,8 @@ def _extract_fields(name: str, schema: Dict) -> Dict[str, str]:
     return _normalize_epsg_fields(enriched)
 
 
-def _try_validate(name: str, schema: Dict) -> bool:
-    return _match_filename(name, schema) is not None
+def _try_validate(name: str, schema: Dict, ignore_case: bool = False) -> bool:
+    return _match_filename(name, schema, ignore_case=ignore_case) is not None
 
 
 def _attempt_parse(
@@ -168,6 +169,7 @@ def _attempt_parse(
     info: Dict[str, Any],
     candidates: Iterable[Path],
     product_hint: Optional[str],
+    ignore_case: bool = False,
 ) -> tuple[Optional[ParseResult], Optional[ParseError], Optional[Exception]]:
     """Attempt to parse *name* once and return result with diagnostics."""
 
@@ -180,12 +182,12 @@ def _attempt_parse(
         try:
             schema = _load_json_from_path(hinted)
             canonical_family = product_hint or _family_from_path(hinted, info)
-            if _try_validate(name, schema):
+            if _try_validate(name, schema, ignore_case=ignore_case):
                 display_family = to_display_family(canonical_family)
                 return (
                     ParseResult(
                         valid=True,
-                        fields=_extract_fields(name, schema),
+                        fields=_extract_fields(name, schema, ignore_case=ignore_case),
                         version=hinted_meta.version if hinted_meta else None,
                         status=hinted_meta.status if hinted_meta else None,
                         match_family=display_family,
@@ -193,7 +195,7 @@ def _attempt_parse(
                     None,
                     None,
                 )
-            mismatch = _explain_match_failure(name, schema)
+            mismatch = _explain_match_failure(name, schema, ignore_case=ignore_case)
             if mismatch:
                 field, expected, value = mismatch
                 display_family = to_display_family(canonical_family)
@@ -217,7 +219,7 @@ def _attempt_parse(
             if first_error is None:
                 first_error = exc
             continue
-        if _try_validate(name, schema):
+        if _try_validate(name, schema, ignore_case=ignore_case):
             matched_family = None
             version = None
             status = None
@@ -239,7 +241,7 @@ def _attempt_parse(
             return (
                 ParseResult(
                     valid=True,
-                    fields=_extract_fields(name, schema),
+                    fields=_extract_fields(name, schema, ignore_case=ignore_case),
                     version=version,
                     status=status,
                     match_family=display_family,
@@ -248,7 +250,7 @@ def _attempt_parse(
                 None,
             )
         if near_miss is None:
-            mismatch = _explain_match_failure(name, schema)
+            mismatch = _explain_match_failure(name, schema, ignore_case=ignore_case)
             if mismatch:
                 field, expected, value = mismatch
                 canonical_family = _family_from_path(p, info)
@@ -440,7 +442,7 @@ def _balanced_slice(pattern: str, end: int) -> str:
     return pattern[:j]
 
 
-def _explain_match_failure(name: str, schema: Dict) -> Optional[tuple[str, str, str]]:
+def _explain_match_failure(name: str, schema: Dict, ignore_case: bool = False) -> Optional[tuple[str, str, str]]:
     pattern = _pattern_from_schema(schema)
     fields = schema.get("fields", {})
     order = schema.get("fields_order", [])
@@ -450,9 +452,9 @@ def _explain_match_failure(name: str, schema: Dict) -> Optional[tuple[str, str, 
     for i, field in enumerate(order):
         next_end = spans[order[i + 1]][1] if i + 1 < len(order) else len(pattern)
         prefix_pat = _balanced_slice(pattern, next_end) + ".*$"
-        if not _compile_pattern(prefix_pat).match(name):
+        if not _compile_pattern(prefix_pat, ignore_case=ignore_case).match(name):
             before_pat = _balanced_prefix(pattern, spans[field][0])
-            m_before = _compile_pattern(before_pat).match(name)
+            m_before = _compile_pattern(before_pat, ignore_case=ignore_case).match(name)
             start_pos = len(m_before.group(0)) if m_before else 0
             target_field = field
             spec = fields.get(target_field, {})
@@ -462,12 +464,12 @@ def _explain_match_failure(name: str, schema: Dict) -> Optional[tuple[str, str, 
                 next_field = order[i + 1]
                 next_spec = fields.get(next_field, {})
                 before_next = _balanced_prefix(pattern, spans[next_field][0])
-                m_before_next = _compile_pattern(before_next).match(name)
+                m_before_next = _compile_pattern(before_next, ignore_case=ignore_case).match(name)
                 if m_before_next:
                     start_pos = len(m_before_next.group(0))
                 else:
                     current_end = _balanced_slice(pattern, spans[field][1])
-                    m_current_end = _compile_pattern(current_end).match(name)
+                    m_current_end = _compile_pattern(current_end, ignore_case=ignore_case).match(name)
                     start_pos = len(m_current_end.group(0)) if m_current_end else start_pos
                 target_field = next_field
                 spec = next_spec
@@ -565,6 +567,7 @@ def parse(
     family: Optional[str] = None,
     version: Optional[str] = None,
     pkg: str = __package__,
+    ignore_case: bool = False,
 ) -> ParseResult:
     """Parse ``name`` using a specific schema.
 
@@ -582,6 +585,8 @@ def parse(
     pkg:
         Package that hosts the schemas. Defaults to the installed
         :mod:`parseo` package.
+    ignore_case:
+        When ``True``, perform case-insensitive matching. Defaults to ``False``.
     """
 
     if schema_path is None:
@@ -592,7 +597,7 @@ def parse(
     resolved_path = Path(schema_path)
     schema = _load_json_from_path(resolved_path)
 
-    if not _try_validate(name, schema):
+    if not _try_validate(name, schema, ignore_case=ignore_case):
         schema_id = schema.get("schema_id") if isinstance(schema.get("schema_id"), str) else None
         family_hint = None
         if schema_id:
@@ -600,7 +605,7 @@ def parse(
         elif family:
             family_hint = family
         display_family = to_display_family(family_hint) if family_hint else None
-        mismatch = _explain_match_failure(name, schema)
+        mismatch = _explain_match_failure(name, schema, ignore_case=ignore_case)
         if mismatch:
             field, expected, value = mismatch
             raise ParseError(
@@ -618,7 +623,7 @@ def parse(
             match_family=display_family,
         )
 
-    fields = _extract_fields(name, schema)
+    fields = _extract_fields(name, schema, ignore_case=ignore_case)
     version_info = schema.get("schema_version")
     status_info = schema.get("status")
     schema_id = schema.get("schema_id") if isinstance(schema.get("schema_id"), str) else None
@@ -638,12 +643,19 @@ def parse(
     )
 
 
-def parse_auto(name: str) -> ParseResult:
+def parse_auto(name: str, ignore_case: bool = False) -> ParseResult:
     """
     Try to parse `name` by matching it against any schema under schemas/**.json.
     A quick 'family' hint is derived from the filename prefix by dynamically
     inspecting available schema files. Returns a ParseResult on success;
     raises RuntimeError if nothing matches.
+    
+    Parameters
+    ----------
+    name:
+        Filename to parse.
+    ignore_case:
+        When ``True``, perform case-insensitive matching. Defaults to ``False``.
     """
     pkg = __package__  # e.g., "parseo"
     info = _discover_family_info(pkg)
@@ -658,7 +670,7 @@ def parse_auto(name: str) -> ParseResult:
     for candidate_name in _generate_name_variants(name):
         product_hint = _guess_product_family(candidate_name, info)
         result, attempt_near_miss, attempt_first_error = _attempt_parse(
-            candidate_name, info, candidates, product_hint
+            candidate_name, info, candidates, product_hint, ignore_case=ignore_case
         )
         if result is not None:
             return result
