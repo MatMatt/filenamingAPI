@@ -13,11 +13,10 @@ from typing import Union
 from ._field_mappings import translate_fields_to_tokens
 from ._json import load_json
 from .schema_registry import get_schema_path
+from .schema_registry import SCHEMAS_ROOT
 from .template import _field_regex
 from .template import compile_template
 
-
-SCHEMAS_ROOT = "schemas"
 
 
 @lru_cache(maxsize=None)

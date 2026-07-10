@@ -20,12 +20,11 @@ from .schema_registry import _get_schema_paths
 from .schema_registry import _load_json_from_path
 from .schema_registry import get_schema_path
 from .schema_registry import list_schema_families
+from .schema_registry import SCHEMAS_ROOT
 from .schema_registry import to_display_family
 from .template import _field_regex
 from .template import compile_template
 
-# Root folder inside the package where JSON schemas live
-SCHEMAS_ROOT = "schemas"
 
 
 @dataclass(frozen=True)
@@ -528,8 +527,8 @@ def describe_schema(
 
     try:
         schema_path = get_schema_path(family, version=version, pkg=pkg)
-    except KeyError as e:
-        raise KeyError(str(e))
+    except KeyError:
+        raise
 
     schema = _load_json_from_path(schema_path)
     fields: Dict[str, Dict[str, Any]] = {}

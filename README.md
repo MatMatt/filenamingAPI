@@ -254,7 +254,7 @@ Use `oneOf` to express mutually exclusive validation branches for a single field
 
 When `parseo parse` runs, the value is checked against each branch in order until one succeeds. `parseo assemble` accepts any value satisfying at least one branch, allowing schemas to stay expressive without duplicating fields.
 
-#### `stack_map`
+#### `stac_map`
 
 Functionality to connect filename tokens to STAC properties in case of incompatibility. In the following example `parseo parse` matches the filename field `prefix` but returns the STAC compliant `platform` and `instrument`. `parseo assemble` must be provided with `platform` and `instrument` and converts it to the correct `prefix` as defined by the filename `template`.
 
@@ -337,7 +337,7 @@ def parse_endpoint(name: str):
 
 @app.post("/assemble")
 def assemble_endpoint(schema: str, fields: dict):
-    filename = assemble(schema, fields)
+    filename = assemble(fields, schema_path=schema)
     return {"filename": filename}
 ```
 
