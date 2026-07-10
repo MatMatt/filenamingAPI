@@ -160,10 +160,6 @@ def test_assemble_clms_clcplus_with_canonical_type():
     assert name == "CLMS_CLCPLUS_RAS_S2023_R10m_E48N37_03035_V01_R00.tif"
 
 
-@pytest.mark.skipif(
-    os.getenv("GITHUB_ACTIONS") == "true",
-    reason="Skipped on GitHub Actions"
-)
 def test_assemble_modis_from_stac_fields():
     schema = (
         Path(__file__).resolve().parents[1]
@@ -174,8 +170,8 @@ def test_assemble_modis_from_stac_fields():
         "instrument": "MODIS",
         "product": "09",
         "variant": "GA",
-        "acq_date": "A2021123",
-        "tile": "h18v04",
+        "acq_date": "2021123",
+        "tile_id": "h18v04",
         "collection": "006",
         "proc_date": "2021132234506",
         "extension": "hdf",
