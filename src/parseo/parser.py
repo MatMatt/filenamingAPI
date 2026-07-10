@@ -765,6 +765,16 @@ def validate_schema(
             validated += 1
             if verbose:
                 print(f"  {example}")
+        counter_examples = schema.get("counter_examples")
+        if isinstance(counter_examples, list):
+            for bad in counter_examples:
+                if not isinstance(bad, str):
+                    continue
+                if _match_filename(bad, schema):
+                    raise ValueError(
+                        f"Counter-example was unexpectedly matched by its "
+                        f"schema: {schema_path} -> {bad}"
+                    )
     if verbose:
         print(f"Validated {validated} examples")
 
