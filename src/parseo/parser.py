@@ -47,6 +47,9 @@ class ParseError(Exception):
     schema_id: Optional[str] = None
     match_family: Optional[str] = None
 
+    def __post_init__(self) -> None:
+        super().__init__(str(self))
+
     def __str__(self) -> str:  # pragma: no cover - trivial
         base = (
             f"Invalid value '{self.value}' for field '{self.field}': expected {self.expected}"
@@ -213,7 +216,8 @@ def _attempt_parse(
         except ParseError as err:
             near_miss = err
         except Exception:
-            # If hinted schema is unreadable, fall back to brute force
+            # Schema loading/parsing can raise OSError (I/O), ValueError
+            # (JSON), or re.error (bad pattern).  Skip and try next schema.
             pass
 
     for p in candidates:

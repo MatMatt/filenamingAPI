@@ -165,7 +165,7 @@ def _select_schema_by_first_compulsory(fields: Dict[str, Any]) -> Path:
     for p in _iter_schema_paths():
         try:
             sch = _load_json_from_path(p)
-        except Exception:
+        except (OSError, ValueError):
             continue
 
         template = sch.get("template")
