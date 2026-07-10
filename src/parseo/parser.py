@@ -65,6 +65,10 @@ class ParseError(Exception):
 # Core helpers
 # ---------------------------
 
+# Per-schema caches — avoid mutating lru_cache'd schema dicts
+_SCHEMA_PATTERN_CACHE: dict[int, str] = {}
+_SCHEMA_ORDER_CACHE: dict[int, list[str]] = {}
+
 
 @lru_cache(maxsize=512)
 def _compile_pattern(pattern: str, ignore_case: bool = False) -> re.Pattern:
@@ -75,24 +79,31 @@ def _compile_pattern(pattern: str, ignore_case: bool = False) -> re.Pattern:
 def _pattern_from_schema(schema: Dict) -> Optional[str]:
     """Return a compiled regex pattern derived from a schema's template.
 
-    The result is cached inside the schema object. If a ``template`` key is
-    present it is compiled via :func:`compile_template`.
+    The compiled pattern and field order are cached in module-level dicts
+    keyed by ``id(schema)`` to avoid mutating the lru_cache'd schema object,
+    which would be thread-unsafe.
     """
 
-    cached = schema.get("_compiled_pattern")
-    if cached:
+    sid = id(schema)
+    cached = _SCHEMA_PATTERN_CACHE.get(sid)
+    if cached is not None:
         return cached
 
     template = schema.get("template")
     if isinstance(template, str):
         fields = schema.get("fields", {})
         pattern, order = compile_template(template, fields)
-        schema["_compiled_pattern"] = pattern
-        if "fields_order" not in schema and order:
-            schema["fields_order"] = order
+        _SCHEMA_PATTERN_CACHE[sid] = pattern
+        if order:
+            _SCHEMA_ORDER_CACHE.setdefault(sid, order)
         return pattern
 
     return None
+
+
+def _get_fields_order(schema: Dict) -> list[str]:
+    """Return the field order for *schema*, from cache or the schema itself."""
+    return _SCHEMA_ORDER_CACHE.get(id(schema)) or schema.get("fields_order", [])
 
 
 def _match_filename(name: str, schema: Dict, ignore_case: bool = False) -> Optional[re.Match]:
@@ -101,12 +112,6 @@ def _match_filename(name: str, schema: Dict, ignore_case: bool = False) -> Optio
         return None
     rx = _compile_pattern(patt, ignore_case=ignore_case)
     return rx.match(name)
-
-
-def _generate_name_variants(name: str) -> Iterator[str]:
-    """Yield name variants accounting for known inconsistencies."""
-
-    yield name
 
 
 def _family_from_path(path: Path, info: Dict[str, Any]) -> Optional[str]:
@@ -444,7 +449,7 @@ def _balanced_slice(pattern: str, end: int) -> str:
 def _explain_match_failure(name: str, schema: Dict, ignore_case: bool = False) -> Optional[tuple[str, str, str]]:
     pattern = _pattern_from_schema(schema)
     fields = schema.get("fields", {})
-    order = schema.get("fields_order", [])
+    order = _get_fields_order(schema)
     if not pattern or not order:
         return None
     spans = _named_group_spans(pattern)
@@ -666,17 +671,16 @@ def parse_auto(name: str, ignore_case: bool = False) -> ParseResult:
     near_miss: Optional[ParseError] = None
     first_error: Optional[Exception] = None
 
-    for candidate_name in _generate_name_variants(name):
-        product_hint = _guess_product_family(candidate_name, info)
-        result, attempt_near_miss, attempt_first_error = _attempt_parse(
-            candidate_name, info, candidates, product_hint, ignore_case=ignore_case
-        )
-        if result is not None:
-            return result
-        if near_miss is None and attempt_near_miss is not None:
-            near_miss = attempt_near_miss
-        if first_error is None and attempt_first_error is not None:
-            first_error = attempt_first_error
+    product_hint = _guess_product_family(name, info)
+    result, attempt_near_miss, attempt_first_error = _attempt_parse(
+        name, info, candidates, product_hint, ignore_case=ignore_case
+    )
+    if result is not None:
+        return result
+    if near_miss is None and attempt_near_miss is not None:
+        near_miss = attempt_near_miss
+    if first_error is None and attempt_first_error is not None:
+        first_error = attempt_first_error
 
     # Nothing matched — provide a helpful error listing what we saw
     with as_file(files(pkg).joinpath(SCHEMAS_ROOT)) as rp:

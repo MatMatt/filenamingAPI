@@ -236,4 +236,9 @@ def clear_cache() -> None:
     _load_json_from_path.cache_clear()
     _get_schema_paths.cache_clear()
     _discover_family_info.cache_clear()
+    # Also clear per-schema pattern caches stored in parser module
+    from . import parser as _parser
+
+    _parser._SCHEMA_PATTERN_CACHE.clear()
+    _parser._SCHEMA_ORDER_CACHE.clear()
     get_schema_path.cache_clear()

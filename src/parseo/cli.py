@@ -17,6 +17,7 @@ from parseo.parser import describe_schema  # parser helpers
 from parseo.parser import parse
 from parseo.parser import parse_auto
 from parseo.schema_registry import discover_families
+from parseo.stac_http import StacClientError
 from parseo.stac_http import list_collections_http
 from parseo.stac_http import sample_collection_filenames
 
@@ -376,4 +377,7 @@ def main(argv: Union[List[str], None] = None) -> int:
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    try:
+        raise SystemExit(main())
+    except StacClientError as e:
+        raise SystemExit(str(e)) from e

@@ -11,22 +11,22 @@ from typing import Dict
 from typing import Union
 
 from ._field_mappings import translate_fields_to_tokens
-from ._json import load_json
+from .parser import _get_fields_order
+from .parser import _pattern_from_schema
+from .schema_registry import _load_json_from_path
 from .schema_registry import get_schema_path
 from .schema_registry import SCHEMAS_ROOT
 from .template import _field_regex
 from .template import compile_template
 
 
-
-@lru_cache(maxsize=None)
-def _load_schema(schema_path: Union[str, Path]) -> Dict[str, Any]:
-    return load_json(str(schema_path))
-
-
 def clear_schema_cache() -> None:
-    """Clear the cached schemas."""
-    _load_schema.cache_clear()
+    """Clear all cached schema data."""
+    _load_json_from_path.cache_clear()
+    from .parser import _SCHEMA_PATTERN_CACHE, _SCHEMA_ORDER_CACHE
+
+    _SCHEMA_PATTERN_CACHE.clear()
+    _SCHEMA_ORDER_CACHE.clear()
 
 
 def _assemble_from_template(template: str, fields: Dict[str, Any]) -> str:
@@ -79,7 +79,7 @@ def _assemble_schema(schema_path: Union[str, Path], fields: Dict[str, Any]) -> s
     segments are dropped if any enclosed field is missing.
     """
 
-    sch = _load_schema(schema_path)
+    sch = _load_json_from_path(schema_path)
     prepared_fields = translate_fields_to_tokens(fields, sch)
 
     template = sch.get("template")
@@ -164,15 +164,15 @@ def _select_schema_by_first_compulsory(fields: Dict[str, Any]) -> Path:
 
     for p in _iter_schema_paths():
         try:
-            sch = _load_schema(p)
+            sch = _load_json_from_path(p)
         except Exception:
             continue
 
         template = sch.get("template")
         if not isinstance(template, str):
             continue
-        _, order = compile_template(template, sch.get("fields", {}))
-        sch["fields_order"] = order
+        _pattern_from_schema(sch)
+        order = _get_fields_order(sch)
         if not order:
             continue
 
