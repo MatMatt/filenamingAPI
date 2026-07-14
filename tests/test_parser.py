@@ -219,7 +219,8 @@ def test_parse_urban_atlas_lcu():
         "product": "UA",
         "variable": "LCU",
         "survey": "S2021",
-        "type": "vector",
+        "type": "V",
+        "representation": "vector",
         "resolution": "025ha",
         "area_code": "DK004L3",
         "city": "AALBORG",
@@ -237,9 +238,19 @@ def test_parse_clms_clcplus_type_mapping():
 
     assert result.valid
     assert result.match_family == "CLCPLUS"
-    assert result.fields["type"] == "raster"
-    assert result.fields["epsg_code"] == "03035"
-    assert "type_code" not in result.fields
+    assert result.fields == {
+        "programme": "CLMS",
+        "product": "CLCPLUS",
+        "type": "RAS",
+        "season": "S2023",
+        "resolution": "R10m",
+        "tile_id": "E48N37",
+        "epsg_code": "03035",
+        "version": "V01",
+        "revision": "R00",
+        "extension": "tif",
+        "representation": "raster",
+    }
 
 
 
@@ -377,7 +388,7 @@ def test_parse_modis_stac_mapping():
     assert result.valid
     assert result.match_family == "MODIS"
     assert result.fields["platform"] == "Terra"
-    assert result.fields["instrument"] == "MODIS"
+    assert result.fields["instruments"] == ["MODIS"]
     assert result.fields["platform_code"] == "MOD"
     assert result.fields["product"] == "09"
 
@@ -389,7 +400,7 @@ def test_parse_landsat_stac_mapping():
     assert result.valid
     assert result.match_family == "LANDSAT"
     assert result.fields["platform"] == "landsat-8"
-    assert result.fields["instrument"] == "OLI_TIRS"
+    assert result.fields["instruments"] == ["OLI_TIRS"]
     assert result.fields["platform_code"] == "LC08"
     assert result.fields["epsg_code"] == "32619"
 

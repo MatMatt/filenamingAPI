@@ -124,7 +124,7 @@ def test_assemble_clms_urban_atlas_with_canonical_type():
         "product": "UA",
         "variable": "LCU",
         "survey": "S2021",
-        "type": "vector",
+        "representation": "vector",
         "resolution": "025ha",
         "area_code": "DK004L3",
         "city": "AALBORG",
@@ -146,7 +146,7 @@ def test_assemble_clms_clcplus_with_canonical_type():
     fields = {
         "programme": "CLMS",
         "product": "CLCPLUS",
-        "type": "raster",
+        "representation": "raster",
         "season": "S2023",
         "resolution": "R10m",
         "tile_id": "E48N37",
@@ -167,7 +167,7 @@ def test_assemble_modis_from_stac_fields():
     )
     fields = {
         "platform": "Terra",
-        "instrument": "MODIS",
+        "instruments": ["MODIS"],
         "product": "09",
         "variant": "GA",
         "acq_date": "2021123",
@@ -188,7 +188,7 @@ def test_assemble_landsat_from_stac_fields():
     )
     fields = {
         "platform": "landsat-8",
-        "instrument": "OLI_TIRS",
+        "instruments": ["OLI_TIRS"],
         "processing_level": "L1TP",
         "wrs_path": "190",
         "wrs_row": "026",

@@ -3,7 +3,7 @@
   "schema_id": "copernicus:clms:egms-l2a",
   "schema_version": "0.0.0",
   "status": "current",
-  "stac_version": "1.1.0",
+
   "description": "Copernicus European Ground Motion Service Level 2 basic and calibrated product filename (extension optional).",
   "fields": {
     "product": {

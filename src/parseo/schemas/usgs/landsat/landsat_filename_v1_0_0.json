@@ -4,7 +4,7 @@
   "schema_version": "1.0.0",
   "status": "current",
   "stac_version": "1.1.0",
-  "stac_extensions": ["https://stac-extensions.github.io/processing/v1.0.0/schema.json", "https://stac-extensions.github.io/sat/v1.0.0/schema.json", "https://stac-extensions.github.io/eo/v1.0.0/schema.json"],
+
   "description": "Landsat Collection 2 scene identifier (extension optional).",
   "fields": {
     "platform": {
@@ -14,23 +14,23 @@
       "stac_map": {
         "LT04": {
           "platform": "landsat-4",
-          "instrument": "TM"
+          "instruments": ["TM"]
         },
         "LT05": {
           "platform": "landsat-5",
-          "instrument": "TM"
+          "instruments": ["TM"]
         },
         "LE07": {
           "platform": "landsat-7",
-          "instrument": "ETM+"
+          "instruments": ["ETM+"]
         },
         "LC08": {
           "platform": "landsat-8",
-          "instrument": "OLI_TIRS"
+          "instruments": ["OLI_TIRS"]
         },
         "LC09": {
           "platform": "landsat-9",
-          "instrument": "OLI_TIRS"
+          "instruments": ["OLI_TIRS"]
         }
       }
     },
