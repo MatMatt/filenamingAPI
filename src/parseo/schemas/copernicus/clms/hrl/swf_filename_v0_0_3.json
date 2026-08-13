@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "schema_id": "copernicus:clms:hrl:swf",
   "schema_version": "0.0.2",
-  "status": "deprecated",
+  "status": "current",
   "stac_version": "1.1.0",
   "stac_extensions": [
     "https://stac-extensions.github.io/raster/v1.0.0/schema.json",
@@ -71,6 +71,11 @@
       "pattern": "^[Rr]\\d{2}$",
       "description": "Release identifier"
     },
+    "production_date": {
+      "type": "string",
+      "pattern": "^\\d{8}$",
+      "description": "Production date (YYYYMMDD)"
+    },
     "extension": {
       "type": "string",
       "enum": [
@@ -80,14 +85,15 @@
       "description": "File extension without leading dot"
     }
   },
-  "template": "{programme}_{product}_{variable}_{temporal_coverage}_{resolution}_{tile_id}_{epsg_code}_{version}_{release}[.{extension}]",
+  "template": "{programme}_{product}_{variable}_{temporal_coverage}_{resolution}_{tile_id}_{epsg_code}_{version}_{release}_{production_date}[.{extension}]",
   "examples": [
-    "CLMS_HRLSLF_SFW_S2021_R5m_E34N27_03035_v01_r01.tif",
-    "CLMS_HRLSLF_SFW_S2021_R100m_E36N31_03035_v01_r01.tif",
-    "CLMS_HRLSLF_CM_S2021_R5m_E36N31_03035_v01_r01.tif",
-    "CLMS_HRLSLF_FM_S2021_R5m_E36N31_03035_v01_r01.tif",
-    "CLMS_HRLSLF_WVL_S2018_R5m_E26N17_03035_V01_R02.tif",
-    "CLMS_HRLSLF_SWF_S2021_VEC_E26N17_03035_V01_R02.gpkg",
-    "CLMS_HRLSLF_SWFC_C2018-2021_R100m_EU_03035_V02_R02.tif"
+    "CLMS_HRLSLF_SFW_S2021_R5m_E34N27_03035_v01_r01_20260521.tif",
+    "CLMS_HRLSLF_SFW_S2021_R100m_E36N31_03035_v01_r01_20260521.tif",
+    "CLMS_HRLSLF_CM_S2021_R5m_E36N31_03035_v01_r01_20260521.tif",
+    "CLMS_HRLSLF_FM_S2021_R5m_E36N31_03035_v01_r01_20260521.tif",
+    "CLMS_HRLSLF_WVL_S2018_R5m_E26N17_03035_V01_R02_20260407.tif",
+    "CLMS_HRLSLF_SWF_S2021_VEC_E26N17_03035_V01_R02_20260407.gpkg",
+    "CLMS_HRLSLF_WVL_S2018_R5m_YT_32738_V02_R02_20250101.tif",
+    "CLMS_HRLSLF_WVCL_S2021_R5m_E09N27_03035_V02_R02_20250101.tif"
   ]
 }
