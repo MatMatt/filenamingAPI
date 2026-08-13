@@ -2,16 +2,12 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "schema_id": "copernicus:clms:hrl:swf",
   "schema_version": "0.0.2",
-<<<<<<< HEAD
   "status": "deprecated",
   "stac_version": "1.1.0",
   "stac_extensions": [
     "https://stac-extensions.github.io/raster/v1.0.0/schema.json",
     "https://stac-extensions.github.io/eo/v1.0.0/schema.json"
   ],
-=======
-  "status": "current",
->>>>>>> 14c555954ccbaeb81d09d894eabab4f3a59db395
   "description": "CLMS High Resolution Layer Small Landscape Features product filename (extension optional).",
   "fields": {
     "programme": {
