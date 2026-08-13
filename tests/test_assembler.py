@@ -124,7 +124,7 @@ def test_assemble_clms_urban_atlas_with_canonical_type():
         "product": "UA",
         "variable": "LCU",
         "survey": "S2021",
-        "type": "vector",
+        "representation": "vector",
         "resolution": "025ha",
         "area_code": "DK004L3",
         "city": "AALBORG",
@@ -146,7 +146,7 @@ def test_assemble_clms_clcplus_with_canonical_type():
     fields = {
         "programme": "CLMS",
         "product": "CLCPLUS",
-        "type": "raster",
+        "representation": "raster",
         "season": "S2023",
         "resolution": "R10m",
         "tile_id": "E48N37",
@@ -160,10 +160,6 @@ def test_assemble_clms_clcplus_with_canonical_type():
     assert name == "CLMS_CLCPLUS_RAS_S2023_R10m_E48N37_03035_V01_R00.tif"
 
 
-@pytest.mark.skipif(
-    os.getenv("GITHUB_ACTIONS") == "true",
-    reason="Skipped on GitHub Actions"
-)
 def test_assemble_modis_from_stac_fields():
     schema = (
         Path(__file__).resolve().parents[1]
@@ -171,11 +167,11 @@ def test_assemble_modis_from_stac_fields():
     )
     fields = {
         "platform": "Terra",
-        "instrument": "MODIS",
+        "instruments": ["MODIS"],
         "product": "09",
         "variant": "GA",
-        "acq_date": "A2021123",
-        "tile": "h18v04",
+        "acq_date": "2021123",
+        "tile_id": "h18v04",
         "collection": "006",
         "proc_date": "2021132234506",
         "extension": "hdf",
@@ -192,7 +188,7 @@ def test_assemble_landsat_from_stac_fields():
     )
     fields = {
         "platform": "landsat-8",
-        "instrument": "OLI_TIRS",
+        "instruments": ["OLI_TIRS"],
         "processing_level": "L1TP",
         "wrs_path": "190",
         "wrs_row": "026",

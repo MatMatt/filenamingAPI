@@ -7,9 +7,11 @@ from importlib.resources import as_file
 from importlib.resources import files
 from pathlib import Path
 import re
+from types import MappingProxyType
 from typing import Any
 from typing import Dict
 from typing import Iterator
+from typing import Mapping
 from typing import Optional
 from typing import Union
 
@@ -78,7 +80,7 @@ class _FamilyInfo:
     schema_path: Path
     version: Optional[str] = None
     status: Optional[str] = None
-    versions: Dict[str, tuple[Path, Optional[str]]] = field(default_factory=dict)
+    versions: Mapping[str, tuple[Path, Optional[str]]] = field(default_factory=dict)
 
 
 @lru_cache(maxsize=1)
@@ -91,7 +93,7 @@ def _discover_family_info(pkg: str) -> Dict[str, _FamilyInfo]:
             continue
         try:
             data = _load_json_from_path(path)
-        except Exception:
+        except (OSError, ValueError):
             continue
         schema_id = data.get("schema_id")
         version = data.get("schema_version")
@@ -144,7 +146,7 @@ def _discover_family_info(pkg: str) -> Dict[str, _FamilyInfo]:
             schema_path=current_path,
             version=current_version,
             status=current_status,
-            versions=versions,
+            versions=MappingProxyType(versions),
         )
     return info
 
@@ -236,4 +238,9 @@ def clear_cache() -> None:
     _load_json_from_path.cache_clear()
     _get_schema_paths.cache_clear()
     _discover_family_info.cache_clear()
+    # Also clear per-schema pattern caches stored in parser module
+    from . import parser as _parser
+
+    _parser._SCHEMA_PATTERN_CACHE.clear()
+    _parser._SCHEMA_ORDER_CACHE.clear()
     get_schema_path.cache_clear()

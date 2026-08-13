@@ -3,8 +3,7 @@
   "schema_id": "copernicus:clms:rz",
   "schema_version": "0.0.0",
   "status": "current",
-  "stac_version": "1.1.0",
-  "stac_extensions": [],
+
   "description": "CLMS Riparian Zones Land Cover / Land Use filename (extension optional).",
   "fields": {
     "product": {

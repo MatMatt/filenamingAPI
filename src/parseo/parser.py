@@ -20,12 +20,11 @@ from .schema_registry import _get_schema_paths
 from .schema_registry import _load_json_from_path
 from .schema_registry import get_schema_path
 from .schema_registry import list_schema_families
+from .schema_registry import SCHEMAS_ROOT
 from .schema_registry import to_display_family
 from .template import _field_regex
 from .template import compile_template
 
-# Root folder inside the package where JSON schemas live
-SCHEMAS_ROOT = "schemas"
 
 
 @dataclass(frozen=True)
@@ -48,6 +47,9 @@ class ParseError(Exception):
     schema_id: Optional[str] = None
     match_family: Optional[str] = None
 
+    def __post_init__(self) -> None:
+        super().__init__(str(self))
+
     def __str__(self) -> str:  # pragma: no cover - trivial
         base = (
             f"Invalid value '{self.value}' for field '{self.field}': expected {self.expected}"
@@ -66,6 +68,10 @@ class ParseError(Exception):
 # Core helpers
 # ---------------------------
 
+# Per-schema caches — avoid mutating lru_cache'd schema dicts
+_SCHEMA_PATTERN_CACHE: dict[int, str] = {}
+_SCHEMA_ORDER_CACHE: dict[int, list[str]] = {}
+
 
 @lru_cache(maxsize=512)
 def _compile_pattern(pattern: str, ignore_case: bool = False) -> re.Pattern:
@@ -76,24 +82,31 @@ def _compile_pattern(pattern: str, ignore_case: bool = False) -> re.Pattern:
 def _pattern_from_schema(schema: Dict) -> Optional[str]:
     """Return a compiled regex pattern derived from a schema's template.
 
-    The result is cached inside the schema object. If a ``template`` key is
-    present it is compiled via :func:`compile_template`.
+    The compiled pattern and field order are cached in module-level dicts
+    keyed by ``id(schema)`` to avoid mutating the lru_cache'd schema object,
+    which would be thread-unsafe.
     """
 
-    cached = schema.get("_compiled_pattern")
-    if cached:
+    sid = id(schema)
+    cached = _SCHEMA_PATTERN_CACHE.get(sid)
+    if cached is not None:
         return cached
 
     template = schema.get("template")
     if isinstance(template, str):
         fields = schema.get("fields", {})
         pattern, order = compile_template(template, fields)
-        schema["_compiled_pattern"] = pattern
-        if "fields_order" not in schema and order:
-            schema["fields_order"] = order
+        _SCHEMA_PATTERN_CACHE[sid] = pattern
+        if order:
+            _SCHEMA_ORDER_CACHE.setdefault(sid, order)
         return pattern
 
     return None
+
+
+def _get_fields_order(schema: Dict) -> list[str]:
+    """Return the field order for *schema*, from cache or the schema itself."""
+    return _SCHEMA_ORDER_CACHE.get(id(schema)) or schema.get("fields_order", [])
 
 
 def _match_filename(name: str, schema: Dict, ignore_case: bool = False) -> Optional[re.Match]:
@@ -102,12 +115,6 @@ def _match_filename(name: str, schema: Dict, ignore_case: bool = False) -> Optio
         return None
     rx = _compile_pattern(patt, ignore_case=ignore_case)
     return rx.match(name)
-
-
-def _generate_name_variants(name: str) -> Iterator[str]:
-    """Yield name variants accounting for known inconsistencies."""
-
-    yield name
 
 
 def _family_from_path(path: Path, info: Dict[str, Any]) -> Optional[str]:
@@ -209,7 +216,8 @@ def _attempt_parse(
         except ParseError as err:
             near_miss = err
         except Exception:
-            # If hinted schema is unreadable, fall back to brute force
+            # Schema loading/parsing can raise OSError (I/O), ValueError
+            # (JSON), or re.error (bad pattern).  Skip and try next schema.
             pass
 
     for p in candidates:
@@ -445,7 +453,7 @@ def _balanced_slice(pattern: str, end: int) -> str:
 def _explain_match_failure(name: str, schema: Dict, ignore_case: bool = False) -> Optional[tuple[str, str, str]]:
     pattern = _pattern_from_schema(schema)
     fields = schema.get("fields", {})
-    order = schema.get("fields_order", [])
+    order = _get_fields_order(schema)
     if not pattern or not order:
         return None
     spans = _named_group_spans(pattern)
@@ -528,8 +536,8 @@ def describe_schema(
 
     try:
         schema_path = get_schema_path(family, version=version, pkg=pkg)
-    except KeyError as e:
-        raise KeyError(str(e))
+    except KeyError:
+        raise
 
     schema = _load_json_from_path(schema_path)
     fields: Dict[str, Dict[str, Any]] = {}
@@ -667,17 +675,16 @@ def parse_auto(name: str, ignore_case: bool = False) -> ParseResult:
     near_miss: Optional[ParseError] = None
     first_error: Optional[Exception] = None
 
-    for candidate_name in _generate_name_variants(name):
-        product_hint = _guess_product_family(candidate_name, info)
-        result, attempt_near_miss, attempt_first_error = _attempt_parse(
-            candidate_name, info, candidates, product_hint, ignore_case=ignore_case
-        )
-        if result is not None:
-            return result
-        if near_miss is None and attempt_near_miss is not None:
-            near_miss = attempt_near_miss
-        if first_error is None and attempt_first_error is not None:
-            first_error = attempt_first_error
+    product_hint = _guess_product_family(name, info)
+    result, attempt_near_miss, attempt_first_error = _attempt_parse(
+        name, info, candidates, product_hint, ignore_case=ignore_case
+    )
+    if result is not None:
+        return result
+    if near_miss is None and attempt_near_miss is not None:
+        near_miss = attempt_near_miss
+    if first_error is None and attempt_first_error is not None:
+        first_error = attempt_first_error
 
     # Nothing matched — provide a helpful error listing what we saw
     with as_file(files(pkg).joinpath(SCHEMAS_ROOT)) as rp:
@@ -762,6 +769,16 @@ def validate_schema(
             validated += 1
             if verbose:
                 print(f"  {example}")
+        counter_examples = schema.get("counter_examples")
+        if isinstance(counter_examples, list):
+            for bad in counter_examples:
+                if not isinstance(bad, str):
+                    continue
+                if _match_filename(bad, schema):
+                    raise ValueError(
+                        f"Counter-example was unexpectedly matched by its "
+                        f"schema: {schema_path} -> {bad}"
+                    )
     if verbose:
         print(f"Validated {validated} examples")
 

@@ -205,7 +205,9 @@ Adding a schema requires only a JSON document under `src/parseo/schemas/`. Start
 
 -   **Write the versioned schema file** – `<product>_filename_vX_Y_Z.json` with required metadata (`schema_id`, `schema_version`, `status`, optional `stac_version`, `stac_extensions`, and `description`).
 
--   **Maintain versions** – mark the latest schema as `"current"` and move older ones to `"deprecated"` (or similar). parsEO uses these flags to pick defaults.
+-   **Maintain versions** — mark the latest schema as `"current"` and move older ones to `"deprecated"` (or similar). parsEO uses these flags to pick defaults.
+
+    **Schema versioning policy:** Schemas at version `0.0.0` are provisional — their patterns and field definitions may change without notice. Once a product's naming convention is finalised (typically when it reaches CDSE production), the schema should be promoted to `1.0.0` to signal a stable, supported contract.
 
 ### Container Object `fields`
 
@@ -254,7 +256,7 @@ Use `oneOf` to express mutually exclusive validation branches for a single field
 
 When `parseo parse` runs, the value is checked against each branch in order until one succeeds. `parseo assemble` accepts any value satisfying at least one branch, allowing schemas to stay expressive without duplicating fields.
 
-#### `stack_map`
+#### `stac_map`
 
 Functionality to connect filename tokens to STAC properties in case of incompatibility. In the following example `parseo parse` matches the filename field `prefix` but returns the STAC compliant `platform` and `instrument`. `parseo assemble` must be provided with `platform` and `instrument` and converts it to the correct `prefix` as defined by the filename `template`.
 
@@ -279,22 +281,8 @@ Functionality to connect filename tokens to STAC properties in case of incompati
 }
 ```
 
-The next example uses capture groups (`$1`, `$2`, …). While `tile` is matched in the filename `parseo parse` returns `tile`, `horizontal_grid`, and `vertical_grid` (and `parseo assemble` requires).
-
-``` json
-"tile": {
-  "type": "string",
-  "pattern": "^(h\d{2})(v\d{2})$",
-  "stac_map": {
-    "tile": "$0",
-    "horizontal_grid": "$1",
-    "vertical_grid": "$2"
-  }
-}
-```
 
 #### Container Object `template`
-
 A filename is assembled/parsed based on the definition put into `template` container object. E.g.:
 
 ``` json
@@ -337,7 +325,7 @@ def parse_endpoint(name: str):
 
 @app.post("/assemble")
 def assemble_endpoint(schema: str, fields: dict):
-    filename = assemble(schema, fields)
+    filename = assemble(fields, schema_path=schema)
     return {"filename": filename}
 ```
 

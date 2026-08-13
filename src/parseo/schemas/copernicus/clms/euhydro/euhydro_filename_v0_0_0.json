@@ -4,10 +4,6 @@
   "schema_version": "0.0.0",
   "status": "deprecated",
   "stac_version": "1.1.0",
-  "stac_extensions": [
-    "https://stac-extensions.github.io/vector/v1.0.0/schema.json",
-    "https://stac-extensions.github.io/raster/v1.0.0/schema.json"
-  ],
   "description": "Copernicus EU Hydro filename schema covering status layer (extension optional).",
   "fields": {
     "programme": {
@@ -47,7 +43,7 @@
       "stac_map": {
         "values": {
           "V": {
-            "type": "vector"
+            "representation": "vector"
           }
         }
       }

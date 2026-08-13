@@ -4,7 +4,7 @@
   "schema_version": "1.0.0",
   "status": "current",
   "stac_version": "1.1.0",
-  "stac_extensions": ["https://stac-extensions.github.io/processing/v1.0.0/schema.json", "https://stac-extensions.github.io/sat/v1.0.0/schema.json", "https://stac-extensions.github.io/raster/v1.0.0/schema.json", "https://stac-extensions.github.io/eo/v1.0.0/schema.json"],
+
   "description": "MODIS product filename (extension optional).",
   "fields": {
     "platform": {
@@ -14,15 +14,15 @@
       "stac_map": {
         "MOD": {
           "platform": "Terra",
-          "instrument": "MODIS"
+          "instruments": ["MODIS"]
         },
         "MYD": {
           "platform": "Aqua",
-          "instrument": "MODIS"
+          "instruments": ["MODIS"]
         },
         "MCD": {
           "platform": "Combined",
-          "instrument": "MODIS"
+          "instruments": ["MODIS"]
         }
       }
     },
@@ -46,5 +46,9 @@
   "examples": [
     "MOD09GA.A2021123.h18v04.006.2021132234506.hdf",
     "MYD11A1.A2021001.h21v09.061.2021015190034"
+  ],
+  "counter_examples": [
+    "MOD09GA.X2021123.h18v04.006.2021132234506.hdf",
+    "MOD09GA.A2021123.H18V04.006.2021132234506.hdf"
   ]
 }

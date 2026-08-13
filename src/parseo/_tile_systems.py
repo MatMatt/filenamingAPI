@@ -38,7 +38,14 @@ def detect_tile_system(tile: str) -> Optional[TileSystem]:
 
 
 def normalize_tile(tile: str) -> str:
-    """Return a normalised representation of *tile*."""
+    """Return a normalised representation of *tile*.
 
-    return tile.strip().upper()
+    MGRS and EEA tiles are uppercased.  Tiles from unrecognised systems
+    (e.g., MODIS sinusoidal ``h18v04``) are returned as-is.
+    """
+
+    t = tile.strip()
+    if detect_tile_system(t):
+        return t.upper()
+    return t
 

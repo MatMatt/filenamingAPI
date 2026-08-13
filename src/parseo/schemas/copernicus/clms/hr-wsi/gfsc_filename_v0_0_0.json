@@ -3,11 +3,6 @@
   "schema_id": "copernicus:clms:hr-wsi:gfsc",
   "schema_version": "0.0.0",
   "status": "current",
-  "stac_version": "1.1.0",
-  "stac_extensions": [
-    "https://stac-extensions.github.io/raster/v1.0.0/schema.json",
-    "https://stac-extensions.github.io/eo/v1.0.0/schema.json"
-  ],
   "description": "CLMS HR-WSI Gap-filled Fractional Snow Cover product filename (extension optional).",
   "fields": {
     "programme": {

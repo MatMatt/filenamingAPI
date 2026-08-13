@@ -3,8 +3,7 @@
   "schema_id": "copernicus:clms:n2k",
   "schema_version": "1.0.0",
   "status": "current",
-  "stac_version": "1.1.0",
-  "stac_extensions": [],
+
   "description": "Copernicus CLMS Natura 2000 (N2K) status and change layers filename (extension optional).",
   "fields": {
     "theme": {
