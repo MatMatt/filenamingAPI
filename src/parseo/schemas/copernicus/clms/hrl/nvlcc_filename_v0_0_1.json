@@ -1,33 +1,33 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "schema_id": "copernicus:clms:hrl:swf",
-  "schema_version": "0.0.2",
+  "schema_id": "copernicus:clms:hrl:nvlcc",
+  "schema_version": "0.0.1",
   "status": "deprecated",
   "stac_version": "1.1.0",
   "stac_extensions": [
     "https://stac-extensions.github.io/raster/v1.0.0/schema.json",
     "https://stac-extensions.github.io/eo/v1.0.0/schema.json"
   ],
-  "description": "CLMS High Resolution Layer Small Landscape Features product filename (extension optional).",
+  "description": "CLMS High Resolution Layer Non-Vegetated Land Cover Characteristics product filename (extension optional).",
   "fields": {
-    "programme": {
+    "prefix": {
       "type": "string",
       "enum": [
         "CLMS"
       ],
-      "description": "Copernicus Land Monitoring Service programme identifier"
+      "description": "Constant program prefix"
     },
-    "product": {
+    "theme": {
       "type": "string",
       "enum": [
-        "HRLSLF"
+        "HRLNVLCC"
       ],
-      "description": "Product family identifier"
+      "description": "High Resolution Layer theme identifier"
     },
     "variable": {
       "type": "string",
-      "pattern": "^[A-Z]{2,4}$",
-      "description": "Layer code (e.g., SFW, CM, FM, WVL, SWF, WVCL, SWFC)"
+      "pattern": "^[A-Z]{3,5}$",
+      "description": "Layer code (e.g., IMCCS, IMDC, SBCC)"
     },
     "temporal_coverage": {
       "type": "string",
@@ -36,7 +36,7 @@
     },
     "resolution": {
       "type": "string",
-      "pattern": "^(?:R(?:5|10|20|100)m|VEC)$",
+      "pattern": "^R\\d{2,3}m$",
       "description": "Spatial resolution"
     },
     "tile_id": {
@@ -52,42 +52,38 @@
           "title": "Geographic code",
           "type": "string",
           "pattern": "^[A-Z]{2}$",
-          "description": "Two-letter geographic code of French overseas department used by SWF raster or vector products"
+          "description": "Two-letter geographic code used by VLCC vector products"
         }
       ]
     },
     "epsg_code": {
       "type": "string",
-      "pattern": "^\\d{5}$",
-      "description": "EPSG code of the product grid"
+      "pattern": "^\\d{4,5}$",
+      "description": "EPSG code of the product grid (unpadded values are zero-filled on output)"
     },
     "version": {
       "type": "string",
-      "pattern": "^[Vv]\\d{2}$",
+      "pattern": "^V\\d{2}$",
       "description": "Product version"
     },
     "release": {
       "type": "string",
-      "pattern": "^[Rr]\\d{2}$",
+      "pattern": "^R\\d{2}$",
       "description": "Release identifier"
     },
     "extension": {
       "type": "string",
       "enum": [
-        "tif",
-        "gpkg"
+        "tif"
       ],
       "description": "File extension without leading dot"
     }
   },
-  "template": "{programme}_{product}_{variable}_{temporal_coverage}_{resolution}_{tile_id}_{epsg_code}_{version}_{release}[.{extension}]",
+  "template": "{prefix}_{theme}_{variable}_{temporal_coverage}_{resolution}_{tile_id}_{epsg_code}_{version}_{release}[.{extension}]",
   "examples": [
-    "CLMS_HRLSLF_SFW_S2021_R5m_E34N27_03035_v01_r01.tif",
-    "CLMS_HRLSLF_SFW_S2021_R100m_E36N31_03035_v01_r01.tif",
-    "CLMS_HRLSLF_CM_S2021_R5m_E36N31_03035_v01_r01.tif",
-    "CLMS_HRLSLF_FM_S2021_R5m_E36N31_03035_v01_r01.tif",
-    "CLMS_HRLSLF_WVL_S2018_R5m_E26N17_03035_V01_R02.tif",
-    "CLMS_HRLSLF_SWF_S2021_VEC_E26N17_03035_V01_R02.gpkg",
-    "CLMS_HRLSLF_SWFC_C2018-2021_R100m_EU_03035_V02_R02.tif"
+    "CLMS_VLCC_IMCCS_C2018-2021_R20m_E09N27_03035_V01_R01.tif",
+    "CLMS_NVLCC_IMD_S2021_R10m_E09N27_03035_V01_R01.tif",
+    "CLMS_NVLCC_IBUC_C2018-2021_R20m_E37N28_03035_V01_R02.tif",
+    "CLMS_NVLCC_SBCC_C2018-2021_R100m_E37N28_03035_V01_R02.tif"
   ]
 }
